@@ -6,20 +6,69 @@
     <title>Reset password</title>
     <style>
       body { font-family: system-ui, -apple-system, Arial; background:#0b0f12; color:#e9f1f7; display:flex; min-height:100vh; margin:0; }
-      .wrap { margin:auto; max-width:520px; padding:24px; text-align:center; }
+      .wrap { margin:auto; max-width:560px; padding:24px; text-align:center; }
       .card { background:#0f151a; border:1px solid rgba(255,255,255,.1); border-radius:16px; padding:20px; }
       h1 { margin:0 0 8px; }
-      p { margin:0 0 14px; color:#a9b6c2; }
-      a.btn { display:inline-block; padding:12px 16px; border-radius:12px; border:1px solid rgba(124,252,144,.45); color:#e9f1f7; text-decoration:none; font-weight:800; }
+      p { margin:0 0 14px; color:#a9b6c2; line-height:1.35; }
+      a.btn { display:inline-block; padding:12px 16px; border-radius:12px; border:1px solid rgba(124,252,144,.45); color:#e9f1f7; text-decoration:none; font-weight:900; }
+      .muted { color:#a9b6c2; font-size:12px; margin-top:12px; word-break:break-all; }
     </style>
   </head>
   <body>
     <div class="wrap">
       <div class="card">
         <h1>Email verified ✅</h1>
-        <p>Now open Kova to set your new password.</p>
-        <a class="btn" href="kova://reset-password">Open Kova</a>
+        <p>
+          Tap the button to return to Kova and set a new password.
+        </p>
+
+        <a id="openBtn" class="btn" href="#">Open Kova</a>
+
+        <p class="muted" id="debug"></p>
       </div>
     </div>
+
+    <script>
+      // Supabase may send tokens in the URL hash (#...) or query (?...)
+      function getParams() {
+        const hash = window.location.hash && window.location.hash.startsWith("#")
+          ? window.location.hash.slice(1)
+          : "";
+        const search = window.location.search && window.location.search.startsWith("?")
+          ? window.location.search.slice(1)
+          : "";
+
+        const hashParams = new URLSearchParams(hash);
+        const searchParams = new URLSearchParams(search);
+
+        // prefer hash if present
+        return hashParams.toString() ? hashParams : searchParams;
+      }
+
+      const params = getParams();
+
+      const access_token = params.get("access_token") || "";
+      const refresh_token = params.get("refresh_token") || "";
+      const type = params.get("type") || params.get("token_type") || "";
+
+      // Build a deep link that includes the tokens
+      // IMPORTANT: this is what allows Supabase in your app to unlock the reset state
+      const deepLink =
+        "kova://reset-password" +
+        "?access_token=" + encodeURIComponent(access_token) +
+        "&refresh_token=" + encodeURIComponent(refresh_token) +
+        "&type=" + encodeURIComponent(type);
+
+      const btn = document.getElementById("openBtn");
+      btn.setAttribute("href", deepLink);
+
+      const dbg = document.getElementById("debug");
+      if (!access_token || !refresh_token) {
+        dbg.textContent =
+          "Missing tokens in this link. If this keeps happening, your Supabase redirect URL is not being used for the reset email.";
+      } else {
+        dbg.textContent = "Ready. Tokens detected.";
+      }
+    </script>
   </body>
 </html>
