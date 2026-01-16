@@ -133,7 +133,7 @@
     <!-- Supabase JS from CDN -->
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <script>
-      // Your Supabase project (same as supabaseClient.js)
+      // Same project as your app
       const SUPABASE_URL = "https://ltsdfguznhbmacqqrjcv.supabase.co";
       const SUPABASE_ANON_KEY =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx0c2RmZ3V6bmhibWFjcXFyamN2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc5NTc1NzgsImV4cCI6MjA4MzUzMzU3OH0.N1IDQam92KLfLFUMCLDtGQnZy8PG94eu0bDfe4-b1hk";
@@ -141,7 +141,6 @@
       const { createClient } = window.supabase;
       const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
         auth: {
-          // IMPORTANT: this lets supabase-js read the recovery token from the URL hash
           persistSession: false,
           autoRefreshToken: false,
         },
@@ -209,12 +208,11 @@
           return;
         }
 
-        // Make sure Supabase sees the token in the URL and prepares the user
         const { data, error } = await supabase.auth.getUser();
 
         if (error || !data || !data.user) {
           setStatus(
-            "Could not load your account from this link. Request a new reset link.",
+            "Could not load your account from this link. Request a new reset link from the app.",
             "error"
           );
           pw1.disabled = true;
@@ -223,12 +221,11 @@
           return;
         }
 
-        // Now the page is ready to accept a new password
         setStatus(
-          "Link verified. Enter your new password below and save it.",
+          "Link confirmed. Enter and save your new password below, then go back to the app and sign in.",
           "ok"
         );
-        saveBtn.disabled = true; // wait for matching passwords
+        saveBtn.disabled = true;
       }
 
       saveBtn.addEventListener("click", async () => {
@@ -258,7 +255,7 @@
         }
 
         setStatus(
-          "Password updated! You can now go back to the Kova app and sign in with your new password.",
+          "Password updated. You can now go back to the Kova app and sign in with your new password.",
           "ok"
         );
       });
